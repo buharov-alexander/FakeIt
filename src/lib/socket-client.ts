@@ -122,10 +122,7 @@ class SocketClient {
 
   onGameStart(callback: (gameState: GameState) => void) {
     if (this.mockMode) {
-      setTimeout(() => {
-        const mockGameState = generateMockGameState(1);
-        callback(mockGameState);
-      }, 2000);
+      // Не автоматически запускаем игру, ждем вызова handleStartGame
       return;
     }
 
@@ -144,10 +141,7 @@ class SocketClient {
 
   onVotingStart(callback: (answers: Answer[], timeRemaining: number) => void) {
     if (this.mockMode) {
-      setTimeout(() => {
-        const mockAnswers = generateMockVotingAnswers();
-        callback(mockAnswers, 60);
-      }, 5000);
+      // Не автоматически запускаем голосование
       return;
     }
 
@@ -157,13 +151,7 @@ class SocketClient {
 
   onRoundResults(callback: (results: { answers: Answer[], votes: Vote[], scores: Player[] }) => void) {
     if (this.mockMode) {
-      setTimeout(() => {
-        const mockResults = generateMockRoundResults([
-          { id: 'host-123', nickname: 'Host', score: 0, isConnected: true },
-          { id: 'player-123', nickname: 'Player', score: 0, isConnected: true }
-        ]);
-        callback(mockResults);
-      }, 8000);
+      // Не автоматически показываем результаты
       return;
     }
 

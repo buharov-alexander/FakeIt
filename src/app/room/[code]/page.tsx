@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { socketClient } from '@/lib/socket-client';
+import { PhaseManager } from '@/lib/phase-manager';
 import { GAME_PHASES } from '@/lib/game-phases';
 import { Room, GameState, Question, Answer, Player } from '@/types/game.types';
-import { generateMockGameState, generateMockRoundResults, generateMockFinalScores } from '@/lib/mock-data';
+import { generateMockGameState, generateMockFinalScores } from '@/lib/mock-data';
 import Lobby from '@/components/Lobby';
 import GameScreen from '@/components/GameScreen';
 import VotingScreen from '@/components/VotingScreen';
@@ -24,6 +25,7 @@ export default function RoomPage() {
   const [finalScores, setFinalScores] = useState<Player[]>([]);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [phaseManager, setPhaseManager] = useState<PhaseManager | null>(null);
 
   const roomCode = params.code as string;
   const nickname = searchParams.get('nickname');
@@ -42,6 +44,8 @@ export default function RoomPage() {
       { code: roomCode, nickname },
       (roomData: Room) => {
         setRoom(roomData);
+        const manager = new PhaseManager(roomData.players);
+        setPhaseManager(manager);
         setLoading(false);
       }
     );
@@ -64,15 +68,19 @@ export default function RoomPage() {
     });
 
     socketClient.onRoundResults((_results) => {
-      const mockResults = generateMockRoundResults(room?.players || []);
-      setRoundResults(mockResults);
-      setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
+      if (phaseManager) {
+        const mockResults = phaseManager.finishVoting();
+        setRoundResults(mockResults);
+        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
+      }
     });
 
     socketClient.onGameEnd((_scores) => {
-      const mockFinalScores = generateMockFinalScores(room?.players || []);
-      setFinalScores(mockFinalScores);
-      setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
+      if (phaseManager) {
+        const finalScores = generateMockFinalScores(room?.players || []);
+        setFinalScores(finalScores);
+        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
+      }
     });
 
     socketClient.onError((message) => {
@@ -90,43 +98,55 @@ export default function RoomPage() {
       socketClient.off('error');
       socketClient.disconnect();
     };
-  }, [roomCode, nickname, router, room?.players]);
+  }, [roomCode, nickname, router, room?.players, phaseManager]);
 
   const handleStartGame = () => {
-    // In a real implementation, this would emit a start game event
-    // For mock, we'll simulate the game starting
-    if (room && room.players.length >= 2) {
-      const mockGameState = generateMockGameState(1);
-      setGameState(mockGameState);
-      setCurrentQuestion(mockGameState.question);
+    if (room && room.players.length >= 2 && phaseManager) {
+      const gameState = phaseManager.startGame();
+      setGameState(gameState);
+      setCurrentQuestion(gameState.question);
       setRoom(prev => prev ? { ...prev, status: GAME_PHASES.PLAYING } : null);
     }
   };
 
   const handleSubmitAnswer = (answer: string) => {
     socketClient.submitAnswer({ answer });
+    // В mock режиме симулируем переход к голосованию
+    if (phaseManager) {
+      setTimeout(() => {
+        const votingData = phaseManager.finishAnswering();
+        setVotingAnswers(votingData.answers);
+        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.VOTING, timeRemaining: votingData.timeRemaining } : null);
+      }, 2000);
+    }
   };
 
   const handleSubmitVote = (answerId: string) => {
     socketClient.submitVote({ answerId });
+    // В mock режиме симулируем переход к результатам
+    if (phaseManager) {
+      setTimeout(() => {
+        const resultsData = phaseManager.finishVoting();
+        setRoundResults(resultsData);
+        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
+      }, 2000);
+    }
   };
 
   const handleNextRound = () => {
-    // In a real implementation, this would move to the next round
-    // For mock, we'll simulate the next round
-    if (gameState && gameState.currentRound < 5) {
-      const nextRound = gameState.currentRound + 1;
-      const mockGameState = generateMockGameState(nextRound);
-      setGameState(mockGameState);
-      setCurrentQuestion(mockGameState.question);
-      setRoundResults(null);
-      setVotingAnswers([]);
-    } else {
-      // Game end
-      if (room) {
-        const finalScores = generateMockFinalScores(room.players);
-        setFinalScores(finalScores);
+    if (phaseManager) {
+      const nextRoundData = phaseManager.nextRound();
+      
+      if (nextRoundData.isGameEnd && nextRoundData.finalScores) {
+        // Игра завершена
+        setFinalScores(nextRoundData.finalScores);
         setRoom(prev => prev ? { ...prev, status: GAME_PHASES.FINISHED } : null);
+      } else if (nextRoundData.gameState) {
+        // Следующий раунд
+        setGameState(nextRoundData.gameState);
+        setCurrentQuestion(nextRoundData.gameState.question);
+        setRoundResults(null);
+        setVotingAnswers([]);
       }
     }
   };
