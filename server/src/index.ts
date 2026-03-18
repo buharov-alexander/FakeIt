@@ -44,10 +44,15 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
     socket.join(data.code);
     socket.data.roomCode = data.code;
-    socket.data.playerId = socket.id;
+    
+    // Находим игрока в комнате и устанавливаем его ID
+    const player = room.players.find(p => p.nickname === data.nickname);
+    if (player) {
+      socket.data.playerId = player.id;
+    }
 
     // Обновляем статус подключения в комнате
-    roomStore.updatePlayerStatus(data.code, socket.id, true);
+    roomStore.updatePlayerStatus(data.code, player?.id || socket.id, true);
 
     // Отправляем обновление комнаты всем
     io.to(data.code).emit('room:update', room);
@@ -64,7 +69,12 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     
     socket.join(room.code);
     socket.data.roomCode = room.code;
-    socket.data.playerId = socket.id;
+    
+    // Находим хоста в комнате и устанавливаем его ID
+    const host = room.players.find(p => p.nickname === nickname);
+    if (host) {
+      socket.data.playerId = host.id;
+    }
 
     io.to(room.code).emit('room:update', room);
     
@@ -92,12 +102,22 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     const roomCode = socket.data.roomCode as string;
     console.log(`Answer submitted in room ${roomCode}: ${data.answer}`);
     
-    if (gameEngine.submitAnswer(roomCode, socket.data.playerId as string, data.answer)) {
-      const room = roomStore.getRoom(roomCode);
+    // Находим игрока в комнате по socket ID
+    const room = roomStore.getRoom(roomCode);
+    if (!room) {
+      socket.emit('error', 'Комната не найдена');
+      return;
+    }
+    
+    const player = room.players.find(p => p.id === socket.data.playerId);
+    if (!player) {
+      socket.emit('error', 'Игрок не найден');
+      return;
+    }
+    
+    if (gameEngine.submitAnswer(roomCode, player.id, data.answer)) {
       // Отправляем обновление состояния комнаты всем игрокам
-      if (room) {
-        io.to(roomCode).emit('room:update', room);
-      }
+      io.to(roomCode).emit('room:update', room);
     } else {
       socket.emit('error', 'Не удалось отправить ответ');
     }
@@ -108,9 +128,21 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     const roomCode = socket.data.roomCode as string;
     console.log(`Vote submitted in room ${roomCode}: ${data.answerId}`);
     
-    if (gameEngine.submitVote(roomCode, socket.data.playerId as string, data.answerId)) {
-      const room = roomStore.getRoom(roomCode);
-      if (room && room.gameState?.phase === 'reveal') {
+    // Находим игрока в комнате
+    const room = roomStore.getRoom(roomCode);
+    if (!room) {
+      socket.emit('error', 'Комната не найдена');
+      return;
+    }
+    
+    const player = room.players.find(p => p.id === socket.data.playerId);
+    if (!player) {
+      socket.emit('error', 'Игрок не найден');
+      return;
+    }
+    
+    if (gameEngine.submitVote(roomCode, player.id, data.answerId)) {
+      if (room.gameState?.phase === 'reveal') {
         const results = gameEngine.calculateRoundResults(room.gameState);
         io.to(roomCode).emit('round:results', results);
       }

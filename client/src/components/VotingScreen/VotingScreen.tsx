@@ -84,7 +84,14 @@ export default function VotingScreen({ answers, timeRemaining, onSubmitVote, cur
             {displayAnswers.map((answer: Answer, index: number) => (
               <button
                 key={answer.id}
-                onClick={() => setSelectedAnswer(answer.id)}
+                onClick={() => {
+                  console.log('Click answer:', answer.id, 'PlayerId:', answer.playerId, 'CurrentPlayer:', currentPlayer?.id);
+                  if (answer.playerId !== currentPlayer?.id) {
+                    setSelectedAnswer(answer.id);
+                  } else {
+                    console.log('Cannot vote for own answer!');
+                  }
+                }}
                 disabled={answer.playerId === currentPlayer?.id} // Can't vote for own answer
                 className={`w-full p-4 rounded-lg border-2 text-left transition duration-200 ${
                   selectedAnswer === answer.id
