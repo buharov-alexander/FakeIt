@@ -1,10 +1,10 @@
-import express from 'express';
-import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { createServer } from 'http';
+import express from 'express';
 import cors from 'cors';
 import { Socket } from 'socket.io';
 import { roomStore } from './room-store';
-import { gameEngine } from './game-engine';
+import { GameEngine } from './game-engine';
 import { ClientToServerEvents, ServerToClientEvents, RoomJoinRequest, RoomCreateRequest } from './types/game.types';
 
 const app = express();
@@ -22,6 +22,9 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
     methods: ['GET', 'POST']
   }
 });
+
+// Инициализируем GameEngine с io
+const gameEngine = new GameEngine(io);
 
 const PORT = process.env.PORT || 3001;
 
@@ -91,8 +94,9 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     
     if (gameEngine.submitAnswer(roomCode, socket.data.playerId as string, data.answer)) {
       const room = roomStore.getRoom(roomCode);
-      if (room && room.gameState?.phase === 'voting') {
-        io.to(roomCode).emit('round:voting_start', room.gameState.answers, room.gameState.timeRemaining);
+      // Отправляем обновление состояния комнаты всем игрокам
+      if (room) {
+        io.to(roomCode).emit('room:update', room);
       }
     } else {
       socket.emit('error', 'Не удалось отправить ответ');

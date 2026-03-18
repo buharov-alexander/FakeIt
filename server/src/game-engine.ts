@@ -1,9 +1,15 @@
 import { Room, Player, GameState, Question, Answer, Vote, RoundResults } from './types/game.types';
 import { getRandomQuestion } from './utils/questions';
 import { roomStore } from './room-store';
+import { Server } from 'socket.io';
 
 export class GameEngine {
   private timers: Map<string, NodeJS.Timeout> = new Map();
+  private io: Server;
+
+  constructor(io: Server) {
+    this.io = io;
+  }
 
   startGame(roomCode: string): boolean {
     const room = roomStore.getRoom(roomCode);
@@ -48,7 +54,9 @@ export class GameEngine {
     room.gameState.answers.push(answer);
     
     // Если все игроки ответили, переходим к голосованию
-    if (room.gameState.answers.length === room.players.length) {
+    // Исключаем системный ответ из подсчета
+    const playerAnswersCount = room.gameState.answers.filter(a => a.playerId !== 'system').length;
+    if (playerAnswersCount === room.players.length) {
       this.startVoting(roomCode);
     }
 
@@ -140,6 +148,9 @@ export class GameEngine {
     const shuffledAnswers = this.shuffleArray([...room.gameState.answers]);
     room.gameState.answers = shuffledAnswers;
     
+    // Отправляем событие о начале голосования
+    this.io.to(roomCode).emit('round:voting_start', room.gameState.answers, room.gameState.timeRemaining);
+    
     this.startVoteTimer(roomCode, room.settings.voteTimerSec);
   }
 
@@ -163,6 +174,9 @@ export class GameEngine {
       }
     });
 
+    // Отправляем результаты
+    this.io.to(roomCode).emit('round:results', results);
+
     // Очищаем таймеры
     this.clearTimer(roomCode);
   }
@@ -176,37 +190,39 @@ export class GameEngine {
 
     // Копируем текущие очки игроков
     const playerScores = new Map<string, number>();
-    
+
     // Подсчитываем очки за раунд
     gameState.votes.forEach(vote => {
       const votedAnswer = gameState.answers.find(a => a.id === vote.answerId);
       if (votedAnswer) {
-        // Голосующий получает 1000 очков за правильный ответ
+        // Если проголосовали за правильный ответ
         if (votedAnswer.isCorrect) {
           const currentScore = playerScores.get(vote.playerId) || 0;
           playerScores.set(vote.playerId, currentScore + 1000);
         }
         
-        // Автор ложного ответа получает 500 очков за каждый обманутый голос
+        // Если проголосовали за ложный ответ, даем очки автору ответа
         if (!votedAnswer.isCorrect && votedAnswer.playerId !== 'system') {
-          const authorScore = playerScores.get(votedAnswer.playerId) || 0;
-          playerScores.set(votedAnswer.playerId, authorScore + 500);
+          const currentScore = playerScores.get(votedAnswer.playerId) || 0;
+          playerScores.set(votedAnswer.playerId, currentScore + 500);
         }
       }
     });
 
-    // Создаем массив с обновленными очками
-    results.scores = Array.from(playerScores.entries()).map(([playerId, score]) => ({
-      id: playerId,
-      nickname: '', // Будет заполнено из room.players
-      score,
-      isConnected: true
-    }));
+    // Конвертируем в массив
+    playerScores.forEach((score, playerId) => {
+      results.scores.push({
+        id: playerId,
+        nickname: '', // Будет заполнено выше
+        score,
+        isConnected: true
+      });
+    });
 
     return results;
   }
 
-  private endGame(roomCode: string): void {
+  endGame(roomCode: string): void {
     const room = roomStore.getRoom(roomCode);
     
     if (!room) {
@@ -217,46 +233,9 @@ export class GameEngine {
     this.clearTimer(roomCode);
   }
 
-  private startAnswerTimer(roomCode: string, seconds: number): void {
-    this.clearTimer(roomCode);
-    
-    const timer = setInterval(() => {
-      const room = roomStore.getRoom(roomCode);
-      if (room && room.gameState && room.gameState.timeRemaining !== undefined) {
-        room.gameState.timeRemaining--;
-        
-        if (room.gameState.timeRemaining <= 0) {
-          this.startVoting(roomCode);
-        }
-      }
-    }, 1000);
-    
-    this.timers.set(roomCode, timer);
-  }
-
-  private startVoteTimer(roomCode: string, seconds: number): void {
-    this.clearTimer(roomCode);
-    
-    const timer = setInterval(() => {
-      const room = roomStore.getRoom(roomCode);
-      if (room && room.gameState && room.gameState.timeRemaining !== undefined) {
-        room.gameState.timeRemaining--;
-        
-        if (room.gameState.timeRemaining <= 0) {
-          this.showResults(roomCode);
-        }
-      }
-    }, 1000);
-    
-    this.timers.set(roomCode, timer);
-  }
-
-  private clearTimer(roomCode: string): void {
-    const timer = this.timers.get(roomCode);
-    if (timer) {
-      clearInterval(timer);
-      this.timers.delete(roomCode);
-    }
+  // Утилиты
+  private generateAnswerId(): string {
+    return `answer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private shuffleArray<T>(array: T[]): T[] {
@@ -268,9 +247,27 @@ export class GameEngine {
     return shuffled;
   }
 
-  private generateAnswerId(): string {
-    return `answer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  private startAnswerTimer(roomCode: string, seconds: number): void {
+    this.clearTimer(roomCode);
+    
+    this.timers.set(roomCode, setTimeout(() => {
+      this.startVoting(roomCode);
+    }, seconds * 1000));
+  }
+
+  private startVoteTimer(roomCode: string, seconds: number): void {
+    this.clearTimer(roomCode);
+    
+    this.timers.set(roomCode, setTimeout(() => {
+      this.showResults(roomCode);
+    }, seconds * 1000));
+  }
+
+  private clearTimer(roomCode: string): void {
+    const timer = this.timers.get(roomCode);
+    if (timer) {
+      clearTimeout(timer);
+      this.timers.delete(roomCode);
+    }
   }
 }
-
-export const gameEngine = new GameEngine();
