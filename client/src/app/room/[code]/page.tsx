@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { socketClient } from '@/lib/socket-client';
-import { PhaseManager } from '@/lib/phase-manager';
 import { GAME_PHASES } from '@/lib/game-phases';
 import { Room, GameState, Question, Answer, Player } from '@/types/game.types';
-import { generateMockGameState, generateMockFinalScores } from '@/lib/mock-data';
 import Lobby from '@/components/Lobby';
 import GameScreen from '@/components/GameScreen';
 import VotingScreen from '@/components/VotingScreen';
@@ -25,10 +23,10 @@ export default function RoomPage() {
   const [finalScores, setFinalScores] = useState<Player[]>([]);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [phaseManager, setPhaseManager] = useState<PhaseManager | null>(null);
 
   const roomCode = params.code as string;
   const nickname = searchParams.get('nickname');
+  const isCreateMode = searchParams.get('create') === 'true';
 
   useEffect(() => {
     if (!roomCode || !nickname) {
@@ -36,19 +34,25 @@ export default function RoomPage() {
       return;
     }
 
-    // Connect to socket
+    // Connect to socket immediately
     socketClient.connect();
 
-    // Join room
-    socketClient.joinRoom(
-      { code: roomCode, nickname },
-      (roomData: Room) => {
-        setRoom(roomData);
-        const manager = new PhaseManager(roomData.players);
-        setPhaseManager(manager);
+    if (isCreateMode) {
+      // Создаем комнату
+      socketClient.createRoom((room) => {
+        setRoom(room);
         setLoading(false);
-      }
-    );
+      });
+    } else {
+      // Присоединяем к комнате
+      socketClient.joinRoom(
+        { code: roomCode, nickname },
+        (roomData: Room) => {
+          setRoom(roomData);
+          setLoading(false);
+        }
+      );
+    }
 
     // Set up event listeners
     socketClient.onRoomUpdate(setRoom);
@@ -56,33 +60,25 @@ export default function RoomPage() {
       setGameState(gameStateData);
       setCurrentQuestion(gameStateData.question);
     });
-
     socketClient.onRoundQuestion((question, timeRemaining) => {
       setCurrentQuestion(question);
       setGameState(prev => prev ? { ...prev, question, phase: 'answering', timeRemaining } : null);
     });
-
     socketClient.onVotingStart((answers, timeRemaining) => {
       setVotingAnswers(answers);
       setGameState(prev => prev ? { ...prev, phase: 'voting', timeRemaining } : null);
     });
-
-    socketClient.onRoundResults((_results) => {
-      if (phaseManager) {
-        const mockResults = phaseManager.finishVoting();
-        setRoundResults(mockResults);
-        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
-      }
+    socketClient.onRoundResults((results) => {
+      setRoundResults(results);
+      setGameState(prev => prev ? { ...prev, phase: 'reveal' } : null);
     });
-
-    socketClient.onGameEnd((_scores) => {
-      if (phaseManager) {
-        const finalScores = generateMockFinalScores(room?.players || []);
-        setFinalScores(finalScores);
-        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
-      }
+    socketClient.onGameEnd((scores) => {
+      setFinalScores(scores);
+      setGameState(prev => prev ? { ...prev, phase: 'reveal' } : null);
     });
-
+    socketClient.onPlayerDisconnect((playerId) => {
+      // Handle player disconnect
+    });
     socketClient.onError((message) => {
       setError(message);
       setLoading(false);
@@ -98,57 +94,24 @@ export default function RoomPage() {
       socketClient.off('error');
       socketClient.disconnect();
     };
-  }, [roomCode, nickname, router, room?.players, phaseManager]);
+  }, [roomCode, nickname, router, isCreateMode]);
 
   const handleStartGame = () => {
-    if (room && room.players.length >= 2 && phaseManager) {
-      const gameState = phaseManager.startGame();
-      setGameState(gameState);
-      setCurrentQuestion(gameState.question);
-      setRoom(prev => prev ? { ...prev, status: GAME_PHASES.PLAYING } : null);
+    if (room && room.players.length >= 2) {
+      socketClient.startGame();
     }
   };
 
   const handleSubmitAnswer = (answer: string) => {
     socketClient.submitAnswer({ answer });
-    // В mock режиме симулируем переход к голосованию
-    if (phaseManager) {
-      setTimeout(() => {
-        const votingData = phaseManager.finishAnswering();
-        setVotingAnswers(votingData.answers);
-        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.VOTING, timeRemaining: votingData.timeRemaining } : null);
-      }, 2000);
-    }
   };
 
   const handleSubmitVote = (answerId: string) => {
     socketClient.submitVote({ answerId });
-    // В mock режиме симулируем переход к результатам
-    if (phaseManager) {
-      setTimeout(() => {
-        const resultsData = phaseManager.finishVoting();
-        setRoundResults(resultsData);
-        setGameState(prev => prev ? { ...prev, phase: GAME_PHASES.REVEAL } : null);
-      }, 2000);
-    }
   };
 
   const handleNextRound = () => {
-    if (phaseManager) {
-      const nextRoundData = phaseManager.nextRound();
-      
-      if (nextRoundData.isGameEnd && nextRoundData.finalScores) {
-        // Игра завершена
-        setFinalScores(nextRoundData.finalScores);
-        setRoom(prev => prev ? { ...prev, status: GAME_PHASES.FINISHED } : null);
-      } else if (nextRoundData.gameState) {
-        // Следующий раунд
-        setGameState(nextRoundData.gameState);
-        setCurrentQuestion(nextRoundData.gameState.question);
-        setRoundResults(null);
-        setVotingAnswers([]);
-      }
-    }
+    socketClient.nextRound();
   };
 
   if (loading) {

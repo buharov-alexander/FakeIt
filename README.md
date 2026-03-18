@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fibbage - Игра на блеф для друзей
 
-## Getting Started
+Многопользовательская игра в стиле Fibbage с реальным временем, написанная на Next.js и Socket.io.
 
-First, run the development server:
+## Структура проекта
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+fibbage/
+├── client/                 # Next.js фронтенд
+│   ├── src/
+│   │   ├── app/           # Страницы Next.js
+│   │   ├── components/    # React компоненты
+│   │   └── lib/           # Утилиты и socket клиент
+│   ├── package.json       # Зависимости клиента
+│   └── tsconfig.json      # TypeScript конфигурация
+├── server/                 # Express + Socket.io бэкенд
+│   ├── src/
+│   │   ├── data/          # Вопросы и данные
+│   │   ├── types/         # TypeScript типы
+│   │   ├── utils/         # Утилиты
+│   │   ├── room-store.ts  # Хранилище комнат
+│   │   ├── game-engine.ts # Игровая логика
+│   │   └── index.ts       # Точка входа сервера
+│   └── package.json       # Зависимости сервера
+├── .gitignore              # Игнорируемые файлы
+└── package.json           # Корневые скрипты
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Запуск проекта
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Быстрый старт (оба процесса)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+这将同时启动:
+- Сервер на http://localhost:3001
+- Клиент на http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+### Отдельный запуск
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### Сервер
+```bash
+cd server
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### Клиент
+```bash
+cd client
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+## Технологии
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Фронтенд
+- **Next.js 16** - React фреймворк
+- **TypeScript** - Типизация
+- **Tailwind CSS** - Стили
+- **Socket.io Client** - WebSocket клиент
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Бэкенд
+- **Express** - HTTP сервер
+- **Socket.io** - Real-time коммуникация
+- **TypeScript** - Типизация
+- **In-memory storage** - Хранение комнат в памяти
+
+## Игровые механики
+
+1. **Создание комнаты** - Хост создает комнату с уникальным кодом
+2. **Присоединение** - Игроки присоединяются по коду
+3. **Раунды** - 5 раундов с вопросами
+4. **Ответы** - Игроки пишут ложные ответы
+5. **Голосование** - Игроки угадывают правильный ответ
+6. **Очки** - Начисление за правильные ответы и обман
+
+## API события
+
+### Клиент → Сервер
+- `room:create` - Создание комнаты
+- `room:join` - Присоединение к комнате
+- `game:start` - Начало игры
+- `round:answer_submit` - Отправка ответа
+- `round:vote_submit` - Отправка голоса
+
+### Сервер → Клиент
+- `room:update` - Обновление комнаты
+- `game:start` - Начало игры
+- `round:question` - Новый вопрос
+- `round:voting_start` - Начало голосования
+- `round:results` - Результаты раунда
+- `game:end` - Конец игры
+
+## Разработка
+
+### Добавление вопросов
+
+Вопросы хранятся в `server/src/data/questions.json`:
+
+```json
+[
+  {
+    "id": "q1",
+    "text": "Самая высокая гора в мире — это _____",
+    "answer": "Эверест"
+  }
+]
+```
+
+### Настройка игры
+
+Настройки в `server/src/room-store.ts`:
+- `maxPlayers` - Макс. игроков (2-8)
+- `roundCount` - Количество раундов
+- `answerTimerSec` - Время на ответ
+- `voteTimerSec` - Время на голосование
+
+## Лицензия
+
+MIT

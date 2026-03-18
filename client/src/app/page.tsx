@@ -14,10 +14,10 @@ export default function Home() {
   const handleCreateGame = () => {
     if (!nickname.trim()) return;
     
-    setIsCreating(true);
-    socketClient.createRoom((roomCode) => {
-      router.push(`/room/${roomCode}?nickname=${encodeURIComponent(nickname)}`);
-    });
+    // Генерируем временный код и редиректим
+    const tempCode = 'TEMP';
+    const url = `/room/${tempCode}?nickname=${encodeURIComponent(nickname)}&create=true`;
+    router.push(url);
   };
 
   const handleJoinGame = () => {
