@@ -12,13 +12,13 @@ const httpServer = createServer(app);
 
 // CORS настройка
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000'],
+  origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000', 'http://localhost:3002'],
   methods: ['GET', 'POST']
 }));
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000'],
+    origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000', 'http://localhost:3002'],
     methods: ['GET', 'POST']
   }
 });
@@ -56,7 +56,7 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
   socket.on('room:create', (data?: RoomCreateRequest) => {
     console.log(`Creating room for player ${socket.handshake.query.nickname}`);
     
-    const nickname = socket.handshake.query.nickname as string;
+    const nickname = socket.handshake.query.nickname as string || 'Host';
     const room = roomStore.createRoom(nickname, data?.settings);
     
     socket.join(room.code);

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { socketClient } from '@/lib/socket-client';
 import { GAME_PHASES } from '@/lib/game-phases';
-import { Room, GameState, Question, Answer, Player } from '@/types/game.types';
+import { Room, GameState, Question, Answer, Player, Vote } from '@/types/game.types';
 import Lobby from '@/components/Lobby';
 import GameScreen from '@/components/GameScreen';
 import VotingScreen from '@/components/VotingScreen';
@@ -19,10 +19,11 @@ export default function RoomPage() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [votingAnswers, setVotingAnswers] = useState<Answer[]>([]);
-  const [roundResults, setRoundResults] = useState<any>(null);
+  const [roundResults, setRoundResults] = useState<{ answers: Answer[], votes: Vote[], scores: Player[] } | null>(null);
   const [finalScores, setFinalScores] = useState<Player[]>([]);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [currentPlayerId, setCurrentPlayerId] = useState<string>('');
 
   const roomCode = params.code as string;
   const nickname = searchParams.get('nickname');
@@ -35,7 +36,23 @@ export default function RoomPage() {
     }
 
     // Connect to socket immediately
-    socketClient.connect();
+    socketClient.connect(nickname);
+    
+    // Set current nickname for socket client
+    if (nickname) {
+      (socketClient as any).currentNickname = nickname;
+    }
+    
+    // Get current player ID from socket after connection
+    const checkSocketId = () => {
+      const socketId = socketClient.getSocketId();
+      if (socketId) {
+        setCurrentPlayerId(socketId);
+      } else {
+        setTimeout(checkSocketId, 100);
+      }
+    };
+    checkSocketId();
 
     if (isCreateMode) {
       // Создаем комнату
@@ -148,6 +165,8 @@ export default function RoomPage() {
   }
 
   // Render different screens based on game state
+  const currentPlayer = room.players.find(p => p.id === currentPlayerId) || room.players.find(p => p.nickname === nickname) || null;
+  
   if (gameState) {
     if (gameState.phase === GAME_PHASES.ANSWERING && currentQuestion) {
       return (
@@ -155,7 +174,7 @@ export default function RoomPage() {
           question={currentQuestion}
           timeRemaining={gameState.timeRemaining || 90}
           onSubmitAnswer={handleSubmitAnswer}
-          currentPlayer={room.players.find(p => p.nickname === nickname) || null}
+          currentPlayer={currentPlayer}
         />
       );
     }
@@ -166,7 +185,7 @@ export default function RoomPage() {
           answers={votingAnswers}
           timeRemaining={gameState.timeRemaining || 60}
           onSubmitVote={handleSubmitVote}
-          currentPlayer={room.players.find(p => p.nickname === nickname) || null}
+          currentPlayer={currentPlayer}
         />
       );
     }
@@ -202,7 +221,7 @@ export default function RoomPage() {
   return (
     <Lobby
       room={room}
-      currentPlayer={room.players.find(p => p.nickname === nickname) || null}
+      currentPlayer={currentPlayer}
       onStartGame={handleStartGame}
     />
   );

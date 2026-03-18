@@ -16,10 +16,16 @@ import {
 
 class SocketClient {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+  private currentNickname: string = '';
 
-  connect() {
+  connect(nickname?: string) {
+    if (nickname) {
+      this.currentNickname = nickname;
+    }
+    
     this.socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
       transports: ['websocket'],
+      query: nickname ? { nickname } : undefined
     });
   }
 
@@ -30,16 +36,20 @@ class SocketClient {
     }
   }
 
+  getSocketId(): string | null {
+    return this.socket?.id || null;
+  }
+
   // Room operations
   createRoom(callback: (room: Room) => void) {
-    this.connect();
+    this.connect(this.currentNickname);
     if (!this.socket) throw new Error('Socket not connected');
     this.socket.emit('room:create', {});
     this.socket.once('room:update', callback);
   }
 
   joinRoom(data: RoomJoinRequest, callback: (room: Room) => void) {
-    this.connect();
+    this.connect(data.nickname);
     if (!this.socket) throw new Error('Socket not connected');
     this.socket.emit('room:join', data);
     this.socket.once('room:update', callback);
