@@ -7,7 +7,13 @@ interface ResultsScreenProps {
   results: {
     answers: Answer[];
     votes: Vote[];
-    scores: Player[];
+    scores: {
+      id: string;
+      nickname: string;
+      score: number;
+      isConnected: boolean;
+      roundScoreChange?: number;
+    }[];
   };
   currentRound: number;
   totalRounds: number;
@@ -136,17 +142,34 @@ export default function ResultsScreen({ results, currentRound, totalRounds, onNe
                   }`}>
                     {index + 1}
                   </div>
-                  <span className="font-medium text-gray-800">
-                    {player.nickname}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-800">
+                      {player.nickname}
+                    </span>
+                    {player.roundScoreChange !== undefined && (
+                      <span className={`text-sm font-medium ${
+                        player.roundScoreChange > 0 ? 'text-green-600' : 
+                        player.roundScoreChange < 0 ? 'text-red-600' : 'text-gray-500'
+                      }`}>
+                        {player.roundScoreChange > 0 ? '+' : ''}{player.roundScoreChange}
+                      </span>
+                    )}
+                  </div>
                   {index === 0 && (
                     <span className="text-xs bg-yellow-600 text-white px-2 py-1 rounded-full">
                       🏆 ЛИДЕР
                     </span>
                   )}
                 </div>
-                <div className="text-lg font-bold text-gray-800">
-                  {player.score}
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-800">
+                    {player.score}
+                  </div>
+                  {player.roundScoreChange !== undefined && player.roundScoreChange > 0 && (
+                    <div className="text-sm text-green-600 font-medium">
+                      +{player.roundScoreChange}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

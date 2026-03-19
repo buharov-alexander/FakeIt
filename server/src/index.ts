@@ -142,10 +142,8 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     }
     
     if (gameEngine.submitVote(roomCode, player.id, data.answerId)) {
-      if (room.gameState?.phase === 'reveal') {
-        const results = gameEngine.calculateRoundResults(room.gameState);
-        io.to(roomCode).emit('round:results', results);
-      }
+      // Результаты подсчитываются и отправляются в showResults
+      // Здесь ничего дополнительно вызывать не нужно
     } else {
       socket.emit('error', 'Не удалось отправить голос');
     }

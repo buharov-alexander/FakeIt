@@ -1,7 +1,6 @@
-import { Room, Player, GameState, Question, Answer, Vote, RoundResults } from './types/game.types';
-import { getRandomQuestion } from './utils/questions';
-import { roomStore } from './room-store';
 import { Server } from 'socket.io';
+import { Room, GameState, Answer, Vote, Question, RoundResults, PlayerWithRoundScore } from './types/game.types';
+import { roomStore } from './room-store';
 
 export class GameEngine {
   private timers: Map<string, NodeJS.Timeout> = new Map();
@@ -85,6 +84,7 @@ export class GameEngine {
     
     // Если все игроки проголосовали, показываем результаты
     if (room.gameState.votes.length === room.players.length) {
+      this.clearTimer(roomCode); // Останавливаем таймер голосования
       this.showResults(roomCode);
     }
 
@@ -114,7 +114,7 @@ export class GameEngine {
   }
 
   private createGameState(round: number): GameState {
-    const question = getRandomQuestion();
+    const question = this.getRandomQuestion();
     
     // Добавляем правильный ответ как первый
     const answers: Answer[] = [{
@@ -161,12 +161,23 @@ export class GameEngine {
       return;
     }
 
+    // Проверяем, не в фазе ли уже результаты
+    if (room.gameState.phase === 'reveal') {
+      return;
+    }
+
     room.gameState.phase = 'reveal';
     
-    // Подсчитываем очки
-    const results = this.calculateRoundResults(room.gameState);
+    // Сохраняем текущие очки игроков перед подсчетом
+    const originalScores = new Map<string, number>();
+    room.players.forEach(player => {
+      originalScores.set(player.id, player.score);
+    });
     
-    // Обновляем очки игроков
+    // Подсчитываем и отправляем результаты
+    const results = this.calculateRoundResults(roomCode, room.gameState, originalScores);
+    
+    // Обновляем очки игроков в комнате
     results.scores.forEach(scoredPlayer => {
       const roomPlayer = room.players.find(p => p.id === scoredPlayer.id);
       if (roomPlayer) {
@@ -181,42 +192,68 @@ export class GameEngine {
     this.clearTimer(roomCode);
   }
 
-  public calculateRoundResults(gameState: GameState): RoundResults {
+  public calculateRoundResults(roomCode: string, gameState: GameState, originalScores: Map<string, number>): RoundResults {
     const results: RoundResults = {
       answers: gameState.answers,
       votes: gameState.votes,
       scores: []
     };
 
-    // Копируем текущие очки игроков
-    const playerScores = new Map<string, number>();
+    const room = roomStore.getRoom(roomCode);
+    if (!room) {
+      return results;
+    }
 
     // Подсчитываем очки за раунд
+    const roundScoreChanges = new Map<string, number>();
+    
     gameState.votes.forEach(vote => {
       const votedAnswer = gameState.answers.find(a => a.id === vote.answerId);
       if (votedAnswer) {
         // Если проголосовали за правильный ответ
         if (votedAnswer.isCorrect) {
-          const currentScore = playerScores.get(vote.playerId) || 0;
-          playerScores.set(vote.playerId, currentScore + 1000);
+          const currentScore = roundScoreChanges.get(vote.playerId) || 0;
+          roundScoreChanges.set(vote.playerId, currentScore + 1000);
         }
         
         // Если проголосовали за ложный ответ, даем очки автору ответа
         if (!votedAnswer.isCorrect && votedAnswer.playerId !== 'system') {
-          const currentScore = playerScores.get(votedAnswer.playerId) || 0;
-          playerScores.set(votedAnswer.playerId, currentScore + 500);
+          const currentScore = roundScoreChanges.get(votedAnswer.playerId) || 0;
+          roundScoreChanges.set(votedAnswer.playerId, currentScore + 500);
         }
       }
     });
 
-    // Конвертируем в массив
-    playerScores.forEach((score, playerId) => {
+    // Конвертируем в массив с никнеймами и изменениями очков
+    roundScoreChanges.forEach((roundScore, playerId) => {
+      const previousScore = originalScores.get(playerId) || 0;
+      const totalScore = previousScore + roundScore;
+      
+      // Находим никнейм игрока
+      const player = room.players.find(p => p.id === playerId);
+      const nickname = player ? player.nickname : '';
+      
       results.scores.push({
         id: playerId,
-        nickname: '', // Будет заполнено выше
-        score,
-        isConnected: true
+        nickname,
+        score: totalScore,
+        isConnected: true,
+        roundScoreChange: roundScore // Добавляем изменение очков за раунд
       });
+    });
+
+    // Добавляем игроков, которые не заработали очки в этом раунде
+    room.players.forEach(player => {
+      if (!results.scores.find(s => s.id === player.id)) {
+        const previousScore = originalScores.get(player.id) || 0;
+        results.scores.push({
+          id: player.id,
+          nickname: player.nickname,
+          score: previousScore, // Очки остаются без изменений
+          isConnected: true,
+          roundScoreChange: 0 // Без изменений
+        });
+      }
     });
 
     return results;
@@ -236,6 +273,28 @@ export class GameEngine {
   // Утилиты
   private generateAnswerId(): string {
     return `answer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private getRandomQuestion(): Question {
+    const questions = [
+      {
+        id: 'q1',
+        text: 'Самый глубокий океан — это',
+        answer: 'Тихий океан'
+      },
+      {
+        id: 'q2',
+        text: 'Столица Японии — это',
+        answer: 'Токио'
+      },
+      {
+        id: 'q3',
+        text: 'Самая большая планета в Солнечной системе — это',
+        answer: 'Юпитер'
+      }
+    ];
+    
+    return questions[Math.floor(Math.random() * questions.length)];
   }
 
   private shuffleArray<T>(array: T[]): T[] {

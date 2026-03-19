@@ -14,6 +14,10 @@ export interface Player {
   isConnected: boolean;
 }
 
+export interface PlayerWithRoundScore extends Player {
+  roundScoreChange?: number;  // Изменение очков за текущий раунд
+}
+
 export interface GameSettings {
   maxPlayers: number;       // 2–8
   roundCount: number;       // Количество раундов
@@ -88,5 +92,5 @@ export interface VoteSubmitRequest {
 export interface RoundResults {
   answers: Answer[];
   votes: Vote[];
-  scores: Player[];
+  scores: PlayerWithRoundScore[];
 }
