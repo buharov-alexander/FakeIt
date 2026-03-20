@@ -17,6 +17,11 @@
 /client/coverage
 /server/coverage
 
+# Playwright test results
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
 # next.js
 /.next/
 /client/.next/
