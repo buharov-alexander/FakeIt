@@ -52,7 +52,9 @@ export interface Vote {
 export interface ClientToServerEvents {
   'room:join': (data: RoomJoinRequest) => void;
   'room:create': (data?: RoomCreateRequest) => void;
+  'room:leave': () => void;
   'game:start': () => void;
+  'game:next_round': () => void;
   'round:answer_submit': (data: AnswerSubmitRequest) => void;
   'round:vote_submit': (data: VoteSubmitRequest) => void;
 }

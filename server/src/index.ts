@@ -81,6 +81,30 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     console.log(`Room ${room.code} created by ${nickname}`);
   });
 
+  // Выход из комнаты
+  socket.on('room:leave', () => {
+    const roomCode = socket.data.roomCode as string;
+    const playerId = socket.data.playerId as string;
+    
+    if (roomCode && playerId) {
+      roomStore.leaveRoom(roomCode, playerId);
+      roomStore.updatePlayerStatus(roomCode, playerId, false);
+      
+      const room = roomStore.getRoom(roomCode);
+      if (room) {
+        socket.leave(roomCode);
+        io.to(roomCode).emit('room:update', room);
+        io.to(roomCode).emit('player:disconnect', playerId);
+        
+        console.log(`Player ${playerId} left room ${roomCode}`);
+      }
+      
+      // Очищаем данные сокета
+      socket.data.roomCode = undefined;
+      socket.data.playerId = undefined;
+    }
+  });
+
   // Начало игры
   socket.on('game:start', () => {
     const roomCode = socket.data.roomCode as string;
@@ -90,7 +114,7 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
       const room = roomStore.getRoom(roomCode);
       if (room && room.gameState) {
         io.to(roomCode).emit('game:start', room.gameState);
-        io.to(roomCode).emit('round:question', room.gameState.question, room.gameState.timeRemaining);
+        io.to(roomCode).emit('round:question', room.gameState.question, room.gameState.timeRemaining || 0);
       }
     } else {
       socket.emit('error', 'Не удалось начать игру');
@@ -161,7 +185,7 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
         io.to(roomCode).emit('game:end', room.players.sort((a, b) => b.score - a.score));
       } else if (room && room.gameState) {
         io.to(roomCode).emit('game:start', room.gameState);
-        io.to(roomCode).emit('round:question', room.gameState.question, room.gameState.timeRemaining);
+        io.to(roomCode).emit('round:question', room.gameState.question, room.gameState.timeRemaining || 0);
       }
     } else {
       socket.emit('error', 'Не перейти к следующему раунду');
