@@ -1,7 +1,7 @@
 import { test, expect, type Page, type Browser } from '@playwright/test';
 
-test.describe('Подсчет очков за несколько раундов', () => {
-  test('правильный подсчет очков по сценарию: два раунда, перекрестные голосования', async ({ browser }: { browser: Browser }) => {
+test.describe('Base tests', () => {
+  test('Test calculate score', async ({ browser }: { browser: Browser }) => {
     // Создаем два браузера для двух игроков
     const context1 = await browser.newContext();
     const context2 = await browser.newContext();
@@ -206,7 +206,7 @@ test.describe('Подсчет очков за несколько раундов'
     await context2.close();
   });
   
-  test('запрет голосования за свой ответ', async ({ browser }: { browser: Browser }) => {
+  test('Test forbid voting for own answer', async ({ browser }: { browser: Browser }) => {
     const context1 = await browser.newContext();
     const context2 = await browser.newContext();
     
