@@ -1,8 +1,17 @@
+export enum GamePhase {
+  LOBBY = 'lobby',
+  PLAYING = 'playing',
+  FINISHED = 'finished',
+  ANSWERING = 'answering',
+  VOTING = 'voting',
+  REVEAL = 'reveal'
+}
+
 export interface Room {
   code: string;           // Уникальный код комнаты (6 символов)
   hostId: string;         // ID хоста
   players: Player[];      // Список игроков
-  status: 'lobby' | 'playing' | 'finished';
+  status: GamePhase;
   settings: GameSettings;
   gameState?: GameState;
 }
@@ -28,7 +37,7 @@ export interface GameSettings {
 export interface GameState {
   currentRound: number;
   question: Question;
-  phase: 'answering' | 'voting' | 'reveal';
+  phase: GamePhase;
   answers: Answer[];        // Ответы игроков + правильный
   votes: Vote[];
   timeRemaining?: number;

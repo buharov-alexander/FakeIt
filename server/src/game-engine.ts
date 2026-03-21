@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import questions from './data/questions.json';
-import { Room, GameState, Answer, Vote, Question, RoundResults, PlayerWithRoundScore } from './types/game.types';
+import { Room, GameState, Answer, Vote, Question, RoundResults, PlayerWithRoundScore, GamePhase } from './types/game.types';
 import { roomStore } from './room-store';
 
 export class GameEngine {
@@ -14,7 +14,7 @@ export class GameEngine {
   startGame(roomCode: string): boolean {
     const room = roomStore.getRoom(roomCode);
     
-    if (!room || room.status !== 'lobby') {
+    if (!room || room.status !== GamePhase.LOBBY) {
       return false;
     }
 
@@ -22,7 +22,7 @@ export class GameEngine {
       return false;
     }
 
-    room.status = 'playing';
+    room.status = GamePhase.PLAYING;
     room.gameState = this.createGameState(1);
     
     // Запускаем таймер на ответы
@@ -34,7 +34,7 @@ export class GameEngine {
   submitAnswer(roomCode: string, playerId: string, answerText: string): boolean {
     const room = roomStore.getRoom(roomCode);
     
-    if (!room || !room.gameState || room.gameState.phase !== 'answering') {
+    if (!room || !room.gameState || room.gameState.phase !== GamePhase.ANSWERING) {
       return false;
     }
 
@@ -66,7 +66,7 @@ export class GameEngine {
   submitVote(roomCode: string, playerId: string, answerId: string): boolean {
     const room = roomStore.getRoom(roomCode);
     
-    if (!room || !room.gameState || room.gameState.phase !== 'voting') {
+    if (!room || !room.gameState || room.gameState.phase !== GamePhase.VOTING) {
       return false;
     }
 
@@ -128,7 +128,7 @@ export class GameEngine {
     return {
       currentRound: round,
       question,
-      phase: 'answering',
+      phase: GamePhase.ANSWERING,
       answers,
       votes: [],
       timeRemaining: 90
@@ -142,7 +142,7 @@ export class GameEngine {
       return;
     }
 
-    room.gameState.phase = 'voting';
+    room.gameState.phase = GamePhase.VOTING;
     room.gameState.timeRemaining = room.settings.voteTimerSec;
     
     // Перемешиваем ответы для голосования
@@ -163,11 +163,11 @@ export class GameEngine {
     }
 
     // Проверяем, не в фазе ли уже результаты
-    if (room.gameState.phase === 'reveal') {
+    if (room.gameState.phase === GamePhase.REVEAL) {
       return;
     }
 
-    room.gameState.phase = 'reveal';
+    room.gameState.phase = GamePhase.REVEAL;
     
     // Сохраняем текущие очки игроков перед подсчетом
     const originalScores = new Map<string, number>();
@@ -267,7 +267,7 @@ export class GameEngine {
       return;
     }
 
-    room.status = 'finished';
+    room.status = GamePhase.FINISHED;
     this.clearTimer(roomCode);
   }
 

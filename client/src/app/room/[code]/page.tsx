@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { socketClient } from '@/lib/socket-client';
-import { GAME_PHASES } from '@/lib/game-phases';
-import { Room, GameState, Question, Answer, Player, Vote } from '@/types/game.types';
+import { Room, GameState, Question, Answer, Player, Vote, GamePhase } from '@/types/game.types';
 import Lobby from '@/components/Lobby';
 import GameScreen from '@/components/GameScreen';
 import VotingScreen from '@/components/VotingScreen';
@@ -79,19 +78,19 @@ export default function RoomPage() {
     });
     socketClient.onRoundQuestion((question, timeRemaining) => {
       setCurrentQuestion(question);
-      setGameState(prev => prev ? { ...prev, question, phase: 'answering', timeRemaining } : null);
+      setGameState(prev => prev ? { ...prev, question, phase: GamePhase.ANSWERING, timeRemaining } : null);
     });
     socketClient.onVotingStart((answers, timeRemaining) => {
       setVotingAnswers(answers);
-      setGameState(prev => prev ? { ...prev, phase: 'voting', timeRemaining } : null);
+      setGameState(prev => prev ? { ...prev, phase: GamePhase.VOTING, timeRemaining } : null);
     });
     socketClient.onRoundResults((results) => {
       setRoundResults(results);
-      setGameState(prev => prev ? { ...prev, phase: 'reveal' } : null);
+      setGameState(prev => prev ? { ...prev, phase: GamePhase.REVEAL } : null);
     });
     socketClient.onGameEnd((scores) => {
       setFinalScores(scores);
-      setGameState(prev => prev ? { ...prev, phase: 'reveal' } : null);
+      setGameState(prev => prev ? { ...prev, phase: GamePhase.REVEAL } : null);
     });
     socketClient.onPlayerDisconnect((playerId) => {
       // Handle player disconnect
@@ -168,7 +167,7 @@ export default function RoomPage() {
   const currentPlayer = room.players.find(p => p.id === currentPlayerId) || room.players.find(p => p.nickname === nickname) || null;
   
   if (gameState) {
-    if (gameState.phase === GAME_PHASES.ANSWERING && currentQuestion) {
+    if (gameState.phase === GamePhase.ANSWERING && currentQuestion) {
       return (
         <GameScreen
           question={currentQuestion}
@@ -180,7 +179,7 @@ export default function RoomPage() {
       );
     }
 
-    if (gameState.phase === GAME_PHASES.VOTING && votingAnswers.length > 0) {
+    if (gameState.phase === GamePhase.VOTING && votingAnswers.length > 0) {
       return (
         <VotingScreen
           answers={votingAnswers}
@@ -192,7 +191,7 @@ export default function RoomPage() {
       );
     }
 
-    if (gameState.phase === GAME_PHASES.REVEAL) {
+    if (gameState.phase === GamePhase.REVEAL) {
       if (roundResults) {
         return (
           <ResultsScreen
