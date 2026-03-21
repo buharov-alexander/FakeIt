@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import questions from './data/questions.json';
 import { Room, GameState, Answer, Vote, Question, RoundResults, PlayerWithRoundScore } from './types/game.types';
 import { roomStore } from './room-store';
 
@@ -276,25 +277,8 @@ export class GameEngine {
   }
 
   private getRandomQuestion(): Question {
-    const questions = [
-      {
-        id: 'q1',
-        text: 'Самый глубокий океан — это',
-        answer: 'Тихий океан'
-      },
-      {
-        id: 'q2',
-        text: 'Столица Японии — это',
-        answer: 'Токио'
-      },
-      {
-        id: 'q3',
-        text: 'Самая большая планета в Солнечной системе — это',
-        answer: 'Юпитер'
-      }
-    ];
-    
-    return questions[Math.floor(Math.random() * questions.length)];
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    return questions[randomIndex];
   }
 
   private shuffleArray<T>(array: T[]): T[] {
