@@ -173,6 +173,7 @@ export default function RoomPage() {
         <GameScreen
           question={currentQuestion}
           timeRemaining={gameState.timeRemaining || 90}
+          currentRound={gameState.currentRound}
           onSubmitAnswer={handleSubmitAnswer}
           currentPlayer={currentPlayer}
         />
@@ -184,6 +185,7 @@ export default function RoomPage() {
         <VotingScreen
           answers={votingAnswers}
           timeRemaining={gameState.timeRemaining || 60}
+          currentRound={gameState.currentRound}
           onSubmitVote={handleSubmitVote}
           currentPlayer={currentPlayer}
         />

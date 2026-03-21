@@ -6,11 +6,12 @@ import { Question, Player } from '@/types/game.types';
 interface GameScreenProps {
   question: Question;
   timeRemaining: number;
+  currentRound: number;
   onSubmitAnswer: (answer: string) => void;
   currentPlayer: Player | null;
 }
 
-export default function GameScreen({ question, timeRemaining, onSubmitAnswer, currentPlayer }: GameScreenProps) {
+export default function GameScreen({ question, timeRemaining, currentRound, onSubmitAnswer, currentPlayer }: GameScreenProps) {
   const [answer, setAnswer] = useState('');
   const [timeLeft, setTimeLeft] = useState(timeRemaining);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -60,7 +61,7 @@ export default function GameScreen({ question, timeRemaining, onSubmitAnswer, cu
         <div className="text-center mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="text-lg font-medium text-gray-600">
-              Раунд 1
+              Раунд {currentRound}
             </div>
             <div className={`text-2xl font-bold ${getTimeColor()}`}>
               {formatTime(timeLeft)}

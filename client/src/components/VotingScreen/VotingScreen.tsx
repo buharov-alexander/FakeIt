@@ -6,11 +6,12 @@ import { Answer, Player } from '@/types/game.types';
 interface VotingScreenProps {
   answers: Answer[];
   timeRemaining: number;
+  currentRound: number;
   onSubmitVote: (answerId: string) => void;
   currentPlayer: Player | null;
 }
 
-export default function VotingScreen({ answers, timeRemaining, onSubmitVote, currentPlayer }: VotingScreenProps) {
+export default function VotingScreen({ answers, timeRemaining, currentRound, onSubmitVote, currentPlayer }: VotingScreenProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState(timeRemaining);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -64,7 +65,7 @@ export default function VotingScreen({ answers, timeRemaining, onSubmitVote, cur
         <div className="text-center mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="text-lg font-medium text-gray-600">
-              Раунд 1 - Голосование
+              Раунд {currentRound} - Голосование
             </div>
             <div className={`text-2xl font-bold ${getTimeColor()}`}>
               {formatTime(timeLeft)}
