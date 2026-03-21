@@ -1,4 +1,5 @@
 # Fibbage - Игра на блеф для друзей
+[![Playwright Tests](https://github.com/buharov-alexander/FakeIt/actions/workflows/playwright.yml/badge.svg)](https://github.com/buharov-alexander/FakeIt/actions/workflows/playwright.yml)
 
 Многопользовательская игра в стиле Fibbage с реальным временем, написанная на Next.js и Socket.io.
 
