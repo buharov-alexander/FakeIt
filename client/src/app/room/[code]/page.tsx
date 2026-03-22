@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { socketClient } from '@/lib/socket-client';
-import { Room, GameState, Question, Answer, Player, Vote, GamePhase } from '@/types/game.types';
+import { Room, GameState, Question, Answer, Player, Vote, GamePhase, TIMER_CONSTANTS } from '@/types/game.types';
 import Lobby from '@/components/Lobby';
 import GameScreen from '@/components/GameScreen';
 import VotingScreen from '@/components/VotingScreen';
@@ -171,7 +171,7 @@ export default function RoomPage() {
       return (
         <GameScreen
           question={currentQuestion}
-          timeRemaining={gameState.timeRemaining || 90}
+          timeRemaining={gameState.timeRemaining || TIMER_CONSTANTS.DEFAULT_ANSWER_TIME}
           currentRound={gameState.currentRound}
           onSubmitAnswer={handleSubmitAnswer}
           currentPlayer={currentPlayer}
@@ -183,7 +183,7 @@ export default function RoomPage() {
       return (
         <VotingScreen
           answers={votingAnswers}
-          timeRemaining={gameState.timeRemaining || 60}
+          timeRemaining={gameState.timeRemaining || TIMER_CONSTANTS.DEFAULT_VOTE_TIME}
           currentRound={gameState.currentRound}
           onSubmitVote={handleSubmitVote}
           currentPlayer={currentPlayer}

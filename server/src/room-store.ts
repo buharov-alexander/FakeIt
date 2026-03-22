@@ -1,4 +1,4 @@
-import { Room, Player, GameSettings, GamePhase } from './types/game.types';
+import { Room, Player, GameSettings, GamePhase, TIMER_CONSTANTS } from './types/game.types';
 
 export class RoomStore {
   private rooms: Map<string, Room> = new Map();
@@ -17,8 +17,8 @@ export class RoomStore {
     const defaultSettings: GameSettings = {
       maxPlayers: 8,
       roundCount: 5,
-      answerTimerSec: 300,
-      voteTimerSec: 300
+      answerTimerSec: TIMER_CONSTANTS.DEFAULT_ANSWER_TIME,
+      voteTimerSec: TIMER_CONSTANTS.DEFAULT_VOTE_TIME
     };
 
     const room: Room = {

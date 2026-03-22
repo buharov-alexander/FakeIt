@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import questions from './data/questions.json';
-import { Room, GameState, Answer, Vote, Question, RoundResults, PlayerWithRoundScore, GamePhase } from './types/game.types';
+import { Room, GameState, Answer, Vote, Question, RoundResults, PlayerWithRoundScore, GamePhase, TIMER_CONSTANTS } from './types/game.types';
 import { roomStore } from './room-store';
 
 export class GameEngine {
@@ -131,7 +131,7 @@ export class GameEngine {
       phase: GamePhase.ANSWERING,
       answers,
       votes: [],
-      timeRemaining: 90
+      timeRemaining: TIMER_CONSTANTS.DEFAULT_ANSWER_TIME
     };
   }
 

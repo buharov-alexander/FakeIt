@@ -7,6 +7,12 @@ export enum GamePhase {
   REVEAL = 'reveal'
 }
 
+// Константы для таймеров
+export const TIMER_CONSTANTS = {
+  DEFAULT_ANSWER_TIME: 300,    // 5 минут на ответы
+  DEFAULT_VOTE_TIME: 300       // 5 минут на голосование
+} as const;
+
 export interface Room {
   code: string;           // Уникальный код комнаты (6 символов)
   hostId: string;         // ID хоста
