@@ -17,9 +17,6 @@ test.describe('Base tests', () => {
     // Ждем загрузки лобби
     await page1.waitForSelector('text=Код комнаты:');
     
-    // Делаем скриншот для отладки
-    await page1.screenshot({ path: 'debug-lobby.png' });
-    
     // Ищем код комнаты - ищем элемент после текста "Код комнаты:"
     let roomCode = '';
     
