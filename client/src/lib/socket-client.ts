@@ -55,12 +55,6 @@ class SocketClient {
     this.socket.once('room:update', callback);
   }
 
-  leaveRoom(callback: (room: Room) => void) {
-    if (!this.socket) throw new Error('Socket not connected');
-    this.socket.emit('room:leave');
-    this.socket.once('room:update', callback);
-  }
-
   // Game operations
   submitAnswer(data: AnswerSubmitRequest) {
     if (!this.socket) throw new Error('Socket not connected');

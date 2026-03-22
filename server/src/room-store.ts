@@ -61,31 +61,6 @@ export class RoomStore {
     return room;
   }
 
-  leaveRoom(code: string, playerId: string): boolean {
-    const room = this.rooms.get(code);
-    
-    if (!room) {
-      return false;
-    }
-
-    const playerIndex = room.players.findIndex(p => p.id === playerId);
-    if (playerIndex === -1) {
-      return false;
-    }
-
-    room.players.splice(playerIndex, 1);
-
-    // Если хост вышел, удаляем комнату
-    if (room.players.length === 0) {
-      this.rooms.delete(code);
-    } else if (room.hostId === playerId) {
-      // Назначаем нового хоста
-      room.hostId = room.players[0].id;
-    }
-
-    return true;
-  }
-
   getRoom(code: string): Room | null {
     return this.rooms.get(code) || null;
   }
