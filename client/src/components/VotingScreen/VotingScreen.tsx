@@ -112,7 +112,7 @@ export default function VotingScreen({ answers, timeRemaining, currentRound, onS
                       {String.fromCharCode(65 + index)}
                     </div>
                     <span className="font-medium text-gray-800">
-                      {answer.text}
+                      {answer.text.toLowerCase()}
                     </span>
                   </div>
                   {answer.playerId === currentPlayer?.id && (
