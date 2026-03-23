@@ -20,6 +20,8 @@ export interface Room {
   status: GamePhase;
   settings: GameSettings;
   gameState?: GameState;
+  createdAt: Date;        // Время создания комнаты
+  lastActivity: Date;     // Время последней активности
 }
 
 export interface Player {

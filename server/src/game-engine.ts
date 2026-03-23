@@ -267,7 +267,7 @@ export class GameEngine {
       return;
     }
 
-    room.status = GamePhase.FINISHED;
+    roomStore.setGameFinished(roomCode);
     this.clearTimer(roomCode);
   }
 
