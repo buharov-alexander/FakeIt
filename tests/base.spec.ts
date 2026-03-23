@@ -98,20 +98,20 @@ test.describe('Base tests', () => {
     }
     
     // Игрок 1 выбирает ответ Игрока2 (неправильный)
-    const player2AnswerButton1 = await page1.locator('button').filter({ hasText: 'Ответ Игрока2 Раунд1' }).first();
+    const player2AnswerButton1 = await page1.locator('button').filter({ hasText: 'ответ игрока2 раунд1' }).first();
     await expect(player2AnswerButton1).toBeVisible();
     await player2AnswerButton1.click();
     await page1.click('button:has-text("Проголосовать")');
     
-    // Игрок 2 выбирает правильный ответ (ищем кнопку которая НЕ содержит "Ответ Игрока2 Раунд1" И "Ответ Игрока1 Раунд1")
+    // Игрок 2 выбирает правильный ответ (ищем кнопку которая НЕ содержит "ответ игрока2 раунд1" И "Ответ Игрока1 Раунд1")
     const allPlayer2Buttons = await page2.locator('button').all();
     let correctAnswerButton2 = null;
     
     for (const button of allPlayer2Buttons) {
       const buttonText = await button.textContent();
       if (buttonText && 
-          !buttonText.includes('Ответ Игрока2 Раунд1') && 
-          !buttonText.includes('Ответ Игрока1 Раунд1')) {
+          !buttonText.includes('ответ игрока2 раунд1') && 
+          !buttonText.includes('ответ игрока1 раунд1')) {
         correctAnswerButton2 = button;
         break;
       }
@@ -165,8 +165,8 @@ test.describe('Base tests', () => {
     for (const button of allPlayer1Buttons) {
       const buttonText = await button.textContent();
       if (buttonText && 
-          !buttonText.includes('Ответ Игрока1 Раунд2') && 
-          !buttonText.includes('Ответ Игрока2 Раунд2')) {
+          !buttonText.includes('ответ игрока1 раунд2') && 
+          !buttonText.includes('ответ игрока2 раунд2')) {
         correctAnswerButton1 = button;
         break;
       }
@@ -177,7 +177,7 @@ test.describe('Base tests', () => {
     await page1.click('button:has-text("Проголосовать")');
     
     // Игрок 2 выбирает ответ Игрока1 (неправильный)
-    const player1AnswerButton2 = await page2.locator('button').filter({ hasText: 'Ответ Игрока1 Раунд2' }).first();
+    const player1AnswerButton2 = await page2.locator('button').filter({ hasText: 'ответ игрока1 раунд2' }).first();
     await expect(player1AnswerButton2).toBeVisible();
     await player1AnswerButton2.click();
     await page2.click('button:has-text("Проголосовать")');
