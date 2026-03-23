@@ -1,17 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Question, Player } from '@/types/game.types';
+import { Question } from '@/types/game.types';
 
 interface GameScreenProps {
   question: Question;
   timeRemaining: number;
   currentRound: number;
   onSubmitAnswer: (answer: string) => void;
-  currentPlayer: Player | null;
 }
 
-export default function GameScreen({ question, timeRemaining, currentRound, onSubmitAnswer, currentPlayer }: GameScreenProps) {
+export default function GameScreen({ question, timeRemaining, currentRound, onSubmitAnswer }: GameScreenProps) {
   const [answer, setAnswer] = useState('');
   const [timeLeft, setTimeLeft] = useState(timeRemaining);
   const [isSubmitted, setIsSubmitted] = useState(false);

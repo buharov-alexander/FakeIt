@@ -99,10 +99,6 @@ export class RoomStore {
   private generatePlayerId(): string {
     return `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
-
-  getAllRooms(): Room[] {
-    return Array.from(this.rooms.values());
-  }
 }
 
 export const roomStore = new RoomStore();

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { socketClient } from '@/lib/socket-client';
 
 export default function Home() {
   const [nickname, setNickname] = useState('');
@@ -13,6 +12,8 @@ export default function Home() {
 
   const handleCreateGame = () => {
     if (!nickname.trim()) return;
+    
+    setIsCreating(true);
     
     // Генерируем временный код и редиректим
     const tempCode = 'TEMP';

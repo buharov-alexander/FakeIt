@@ -1,17 +1,16 @@
 import { io, Socket } from 'socket.io-client';
 import { 
-  ServerToClientEvents, 
-  ClientToServerEvents, 
   Room, 
   GameState, 
   Question, 
   Answer, 
-  Vote,
-  Player,
+  Vote, 
+  Player, 
+  AnswerSubmitRequest, 
+  VoteSubmitRequest,
   RoomJoinRequest,
-  RoomCreateRequest,
-  AnswerSubmitRequest,
-  VoteSubmitRequest
+  ClientToServerEvents, 
+  ServerToClientEvents 
 } from '@/types/game.types';
 
 class SocketClient {

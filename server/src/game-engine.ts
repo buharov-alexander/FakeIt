@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import questions from './data/questions.json';
-import { Room, GameState, Answer, Vote, Question, RoundResults, PlayerWithRoundScore, GamePhase, TIMER_CONSTANTS } from './types/game.types';
+import { GameState, Answer, Vote, Question, RoundResults, GamePhase, TIMER_CONSTANTS } from './types/game.types';
 import { roomStore } from './room-store';
 
 export class GameEngine {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Answer, Vote, Player } from '@/types/game.types';
+import { Answer, Vote } from '@/types/game.types';
 
 interface ResultsScreenProps {
   results: {
@@ -16,12 +16,11 @@ interface ResultsScreenProps {
     }[];
   };
   currentRound: number;
-  totalRounds: number;
   onNextRound: () => void;
   isGameEnd: boolean;
 }
 
-export default function ResultsScreen({ results, currentRound, totalRounds, onNextRound, isGameEnd }: ResultsScreenProps) {
+export default function ResultsScreen({ results, currentRound, onNextRound, isGameEnd }: ResultsScreenProps) {
   const [revealedAnswers, setRevealedAnswers] = useState<Set<string>>(new Set());
 
   const revealAnswers = () => {

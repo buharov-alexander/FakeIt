@@ -92,7 +92,7 @@ export default function RoomPage() {
       setFinalScores(scores);
       setGameState(prev => prev ? { ...prev, phase: GamePhase.REVEAL } : null);
     });
-    socketClient.onPlayerDisconnect((playerId) => {
+    socketClient.onPlayerDisconnect(() => {
       // Handle player disconnect
     });
     socketClient.onError((message) => {
@@ -174,7 +174,6 @@ export default function RoomPage() {
           timeRemaining={gameState.timeRemaining || TIMER_CONSTANTS.DEFAULT_ANSWER_TIME}
           currentRound={gameState.currentRound}
           onSubmitAnswer={handleSubmitAnswer}
-          currentPlayer={currentPlayer}
         />
       );
     }
@@ -197,7 +196,6 @@ export default function RoomPage() {
           <ResultsScreen
             results={roundResults}
             currentRound={gameState.currentRound}
-            totalRounds={room.settings.roundCount}
             onNextRound={handleNextRound}
             isGameEnd={false}
           />
@@ -208,9 +206,8 @@ export default function RoomPage() {
         return (
           <ResultsScreen
             results={{ answers: [], votes: [], scores: finalScores }}
-            currentRound={room.settings.roundCount}
-            totalRounds={room.settings.roundCount}
-            onNextRound={() => router.push('/')}
+            currentRound={gameState?.currentRound || 0}
+            onNextRound={() => {}}
             isGameEnd={true}
           />
         );
