@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Answer, Vote } from '@/types/game.types';
+import { Answer, Vote, Player } from '@/types/game.types';
 
 interface ResultsScreenProps {
   results: {
@@ -18,10 +18,15 @@ interface ResultsScreenProps {
   currentRound: number;
   onNextRound: () => void;
   isGameEnd: boolean;
+  currentPlayerId: string;
+  hostId: string;
 }
 
-export default function ResultsScreen({ results, currentRound, onNextRound, isGameEnd }: ResultsScreenProps) {
+export default function ResultsScreen({ results, currentRound, onNextRound, isGameEnd, currentPlayerId, hostId }: ResultsScreenProps) {
   const [revealedAnswers, setRevealedAnswers] = useState<Set<string>>(new Set());
+  
+  // Проверяем, является ли текущий игрок хостом
+  const isHost = currentPlayerId === hostId;
 
   const revealAnswers = () => {
     results.answers.forEach((answer, index) => {
@@ -178,7 +183,12 @@ export default function ResultsScreen({ results, currentRound, onNextRound, isGa
         <div className="text-center">
           <button
             onClick={onNextRound}
-            className="py-3 px-8 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition duration-200"
+            disabled={!isHost}
+            className={`py-3 px-8 font-semibold rounded-lg transition duration-200 ${
+              isHost 
+                ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
             {isGameEnd ? 'Новая игра' : 'Следующий раунд'}
           </button>

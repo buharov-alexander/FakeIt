@@ -198,6 +198,8 @@ export default function RoomPage() {
             currentRound={gameState.currentRound}
             onNextRound={handleNextRound}
             isGameEnd={false}
+            currentPlayerId={currentPlayerId}
+            hostId={room.hostId}
           />
         );
       }
@@ -209,6 +211,8 @@ export default function RoomPage() {
             currentRound={gameState?.currentRound || 0}
             onNextRound={() => {}}
             isGameEnd={true}
+            currentPlayerId={currentPlayerId}
+            hostId={room.hostId}
           />
         );
       }
