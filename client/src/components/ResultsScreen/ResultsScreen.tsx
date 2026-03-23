@@ -18,15 +18,11 @@ interface ResultsScreenProps {
   currentRound: number;
   onNextRound: () => void;
   isGameEnd: boolean;
-  currentPlayerId: string;
-  hostId: string;
+  isHost: boolean;
 }
 
-export default function ResultsScreen({ results, currentRound, onNextRound, isGameEnd, currentPlayerId, hostId }: ResultsScreenProps) {
+export default function ResultsScreen({ results, currentRound, onNextRound, isGameEnd, isHost }: ResultsScreenProps) {
   const [revealedAnswers, setRevealedAnswers] = useState<Set<string>>(new Set());
-  
-  // Проверяем, является ли текущий игрок хостом
-  const isHost = currentPlayerId === hostId;
 
   const revealAnswers = () => {
     results.answers.forEach((answer, index) => {

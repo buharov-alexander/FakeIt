@@ -166,6 +166,9 @@ export default function RoomPage() {
   // Render different screens based on game state
   const currentPlayer = room.players.find(p => p.id === currentPlayerId) || room.players.find(p => p.nickname === nickname) || null;
   
+  // Проверяем, является ли текущий игрок хостом
+  const isCurrentPlayerHost = currentPlayer ? currentPlayer.id === room.hostId : false;
+  
   if (gameState) {
     if (gameState.phase === GamePhase.ANSWERING && currentQuestion) {
       return (
@@ -198,8 +201,7 @@ export default function RoomPage() {
             currentRound={gameState.currentRound}
             onNextRound={handleNextRound}
             isGameEnd={false}
-            currentPlayerId={currentPlayerId}
-            hostId={room.hostId}
+            isHost={isCurrentPlayerHost}
           />
         );
       }
@@ -211,8 +213,7 @@ export default function RoomPage() {
             currentRound={gameState?.currentRound || 0}
             onNextRound={() => {}}
             isGameEnd={true}
-            currentPlayerId={currentPlayerId}
-            hostId={room.hostId}
+            isHost={isCurrentPlayerHost}
           />
         );
       }
