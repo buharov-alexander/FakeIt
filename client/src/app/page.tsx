@@ -33,7 +33,6 @@ export default function Home() {
       <div className="w-90 max-w-md p-8 bg-white rounded-2xl shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Fibbage</h1>
-          <p className="text-gray-600">Игра на блеф для друзей</p>
         </div>
 
         <div className="space-y-6">
@@ -93,10 +92,6 @@ export default function Home() {
               {isJoining ? 'Присоединение...' : 'Присоединиться'}
             </button>
           </div>
-        </div>
-
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>2-8 игроков • 5 раундов</p>
         </div>
       </div>
     </div>
