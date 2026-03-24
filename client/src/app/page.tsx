@@ -30,7 +30,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600 font-sans">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl">
+      <div className="w-90 max-w-md p-8 bg-white rounded-2xl shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Fibbage</h1>
           <p className="text-gray-600">Игра на блеф для друзей</p>

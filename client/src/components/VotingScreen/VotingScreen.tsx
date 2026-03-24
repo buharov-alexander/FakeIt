@@ -61,7 +61,7 @@ export default function VotingScreen({ answers, timeRemaining, currentRound, onS
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
-      <div className="w-full max-w-2xl p-8 bg-white rounded-2xl shadow-2xl">
+      <div className="w-90 max-w-2xl p-8 bg-white rounded-2xl shadow-2xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="text-lg font-medium text-gray-600">
