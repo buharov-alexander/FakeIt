@@ -132,7 +132,7 @@ export default function RoomPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+      <div className="flex min-h-screen items-center justify-center bg-neutral">
         <div className="text-white text-xl">Загрузка...</div>
       </div>
     );
@@ -140,7 +140,7 @@ export default function RoomPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+      <div className="flex min-h-screen items-center justify-center bg-neutral">
         <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Ошибка</h2>
           <p className="text-gray-600 mb-4">{error}</p>
@@ -157,7 +157,7 @@ export default function RoomPage() {
 
   if (!room) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+      <div className="flex min-h-screen items-center justify-center bg-neutral">
         <div className="text-white text-xl">Комната не найдена</div>
       </div>
     );

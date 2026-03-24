@@ -27,11 +27,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <header className="bg-primary text-white py-4 shadow-md">
-          <div className="container mx-auto px-4">
-            <h1 className="text-2xl font-bold">Fibbage</h1>
-          </div>
-        </header>
         <main>
           {children}
         </main>

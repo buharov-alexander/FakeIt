@@ -55,7 +55,7 @@ export default function GameScreen({ question, timeRemaining, currentRound, onSu
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+    <div className="flex min-h-screen items-center justify-center bg-neutral">
       <div className="w-90 max-w-2xl p-8 bg-white rounded-2xl shadow-2xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -70,9 +70,6 @@ export default function GameScreen({ question, timeRemaining, currentRound, onSu
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Придумайте ложный ответ
           </h1>
-          <p className="text-gray-600">
-            Попробуйте обмануть других игроков!
-          </p>
         </div>
 
         <div className="mb-8">
@@ -142,10 +139,6 @@ export default function GameScreen({ question, timeRemaining, currentRound, onSu
             </div>
           </div>
         )}
-
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>Совет: Сделайте ваш ответ правдоподобным, чтобы другие игроки проголосовали за него!</p>
-        </div>
       </div>
     </div>
   );

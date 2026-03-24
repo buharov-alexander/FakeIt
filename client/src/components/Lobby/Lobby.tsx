@@ -13,7 +13,7 @@ export default function Lobby({ room, currentPlayer, onStartGame }: LobbyProps) 
   const canStartGame = room.players.length >= 2 && isHost;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+    <div className="flex min-h-screen items-center justify-center bg-neutral">
       <div className="w-90 max-w-2xl p-8 bg-white rounded-2xl shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Лобби</h1>
@@ -94,11 +94,7 @@ export default function Lobby({ room, currentPlayer, onStartGame }: LobbyProps) 
           <button
             onClick={onStartGame}
             disabled={!canStartGame}
-            className={`w-full py-3 px-4 font-semibold rounded-lg transition duration-200 ${
-              canStartGame
-                ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            className="w-full py-3 px-4 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 shadow-md"
           >
             {room.players.length < 2
               ? `Ожидание игроков (${room.players.length}/2)`

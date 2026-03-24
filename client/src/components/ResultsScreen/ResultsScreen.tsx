@@ -57,7 +57,7 @@ export default function ResultsScreen({ results, currentRound, onNextRound, isGa
   const sortedScores = [...results.scores].sort((a, b) => b.score - a.score);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+    <div className="flex min-h-screen items-center justify-center bg-neutral">
       <div className="w-90 max-w-3xl p-8 bg-white rounded-2xl shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
