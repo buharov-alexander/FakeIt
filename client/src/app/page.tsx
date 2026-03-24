@@ -75,10 +75,6 @@ export default function Home() {
             {isProcessing ? 'Обработка...' : roomCode.trim() ? 'Присоединиться' : 'Создать игру'}
           </button>
         </div>
-
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>2-8 игроков • 5 раундов</p>
-        </div>
       </div>
     </div>
   );
