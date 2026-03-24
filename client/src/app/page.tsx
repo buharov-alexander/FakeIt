@@ -32,8 +32,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-teal-500 to-mint-400 font-sans">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
+    <div className="flex min-h-screen items-center justify-center bg-neutral font-sans">
+      <div className="w-90 max-w-md p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
         <div className="space-y-6">
           <div>
             <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-2">
