@@ -34,7 +34,12 @@ export default function RoomPage() {
       return;
     }
 
-    // Connect to socket immediately
+    // Если уже подключены к сокету, ничего не делаем
+    if (socketClient.getSocketId()) {
+      return;
+    }
+
+    // Connect to socket
     socketClient.connect(nickname);
     
     // Set current nickname for socket client

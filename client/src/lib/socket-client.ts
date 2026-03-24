@@ -22,6 +22,11 @@ class SocketClient {
       this.currentNickname = nickname;
     }
     
+    // Не создавать новое соединение если уже существует
+    if (this.socket && this.socket.connected) {
+      return;
+    }
+    
     this.socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
       transports: ['websocket'],
       query: nickname ? { nickname } : undefined
