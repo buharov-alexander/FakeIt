@@ -179,6 +179,16 @@ export class RoomStore {
     this.cleanupTimers.clear();
   }
 
+  // Найти комнату по ID игрока
+  findRoomByPlayerId(playerId: string): Room | null {
+    for (const room of this.rooms.values()) {
+      if (room.players.some(p => p.id === playerId)) {
+        return room;
+      }
+    }
+    return null;
+  }
+
   private generateUniqueCode(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     

@@ -35,6 +35,22 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
   socket.on('room:join', (data: RoomJoinRequest) => {
     console.log(`Player ${data.nickname} trying to join room ${data.code}`);
     
+    // Проверяем, не находится ли пользователь уже в этой комнате
+    if (socket.data.roomCode === data.code) {
+      console.log(`Player ${data.nickname} is already in room ${data.code}`);
+      const room = roomStore.getRoom(data.code);
+      if (room) {
+        io.to(data.code).emit('room:update', room);
+      }
+      return;
+    }
+    
+    // Проверяем, не находится ли пользователь в другой комнате
+    if (socket.data.roomCode && socket.data.roomCode !== data.code) {
+      console.log(`Player ${data.nickname} is leaving room ${socket.data.roomCode} to join ${data.code}`);
+      socket.leave(socket.data.roomCode);
+    }
+    
     const room = roomStore.joinRoom(data.code, data.nickname);
     
     if (!room) {
@@ -62,9 +78,25 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
   // Создание комнаты
   socket.on('room:create', (data?: RoomCreateRequest) => {
-    console.log(`Creating room for player ${socket.handshake.query.nickname}`);
-    
     const nickname = socket.handshake.query.nickname as string || 'Host';
+    
+    // Проверяем, не является ли пользователь уже хостом комнаты
+    // Сначала ищем по nickname, так как playerId может быть еще не установлен
+    let existingRoom = null;
+    
+    // Если есть playerId, ищем по нему
+    if (socket.data.playerId) {
+      existingRoom = roomStore.findRoomByPlayerId(socket.data.playerId);
+      if (existingRoom && existingRoom.hostId === socket.data.playerId) {
+        console.log(`Player ${nickname} is already host of room ${existingRoom.code}`);
+        socket.data.roomCode = existingRoom.code;
+        io.to(existingRoom.code).emit('room:update', existingRoom);
+        return;
+      }
+    }
+    
+    console.log(`Creating room for player ${nickname}`);
+    
     const room = roomStore.createRoom(nickname, data?.settings);
     
     socket.join(room.code);
