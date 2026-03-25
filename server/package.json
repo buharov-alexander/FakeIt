@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "docker:build": "docker build -t fibbage-server .",
+    "docker:run": "docker run -p 3001:3001 --name fibbage-server fibbage-server",
+    "docker:stop": "docker stop fibbage-server && docker rm fibbage-server"
   },
   "dependencies": {
     "express": "^4.18.2",
