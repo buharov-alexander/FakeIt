@@ -19,9 +19,33 @@ export default function Lobby({ room, currentPlayer, onStartGame }: LobbyProps) 
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Лобби</h1>
           <div className="flex items-center justify-center gap-2 text-lg">
             <span className="text-gray-600">Код комнаты:</span>
-            <span className="font-mono font-bold text-purple-600 text-2xl bg-purple-100 px-3 py-1 rounded">
-              {room.code}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-bold text-purple-600 text-2xl bg-purple-100 px-3 py-1 rounded">
+                {room.code}
+              </span>
+              {isHost && (
+                <button
+                  onClick={() => {
+                    const inviteUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/?roomCode=${room.code}`;
+                    navigator.clipboard.writeText(inviteUrl).catch(() => {
+                      // Fallback
+                      const textArea = document.createElement('textarea');
+                      textArea.value = inviteUrl;
+                      document.body.appendChild(textArea);
+                      textArea.select();
+                      document.execCommand('copy');
+                      document.body.removeChild(textArea);
+                    });
+                  }}
+                  className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
+                  title="Скопировать ссылку для приглашения"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

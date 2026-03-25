@@ -1,13 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Home() {
   const [nickname, setNickname] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Заполняем roomCode из URL параметров (для invite link)
+  useEffect(() => {
+    const inviteRoomCode = searchParams.get('roomCode');
+    if (inviteRoomCode) {
+      setRoomCode(inviteRoomCode.toUpperCase());
+    }
+  }, [searchParams]);
 
   const handleSubmit = () => {
     if (!nickname.trim()) return;
@@ -53,7 +62,7 @@ export default function Home() {
 
           <div>
             <label htmlFor="roomCode" className="block text-sm font-medium text-gray-700 mb-2">
-              Код комнаты (необязательно)
+              Код комнаты {searchParams.get('roomCode') && <span className="text-purple-600">(из приглашения)</span>}
             </label>
             <input
               id="roomCode"
@@ -62,9 +71,17 @@ export default function Home() {
               onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
               placeholder="ABC123"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition ${
+                searchParams.get('roomCode') ? 'border-purple-300 bg-purple-50' : 'border-gray-300'
+              }`}
               maxLength={6}
+              readOnly={!!searchParams.get('roomCode')}
             />
+            {searchParams.get('roomCode') && (
+              <p className="mt-2 text-sm text-purple-600">
+                Вы были приглашены в комнату {roomCode}
+              </p>
+            )}
           </div>
 
           <button
