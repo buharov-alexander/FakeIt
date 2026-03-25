@@ -107,7 +107,6 @@ export function useRoom() {
       socketClient.off('round:results');
       socketClient.off('game:end');
       socketClient.off('error');
-      socketClient.disconnect();
     };
   }, [roomCode, nickname, router, isCreateMode]);
 

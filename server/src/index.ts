@@ -29,7 +29,7 @@ const gameEngine = new GameEngine(io);
 const PORT = process.env.PORT || 3001;
 
 io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
-  console.log(`Player connected: ${socket.id}`);
+  console.log(`Player connected: ${socket.id}, ${socket.handshake.query.nickname}`);
 
   // Присоединение к комнате
   socket.on('room:join', (data: RoomJoinRequest) => {
@@ -202,7 +202,8 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
   // Отключение игрока
   socket.on('disconnect', () => {
-    console.log(`Player disconnected: ${socket.id}`);
+	const playerName = socket.handshake.query.nickname;
+    console.log(`Player disconnected: ${socket.id} ${playerName}`);
     
     const roomCode = socket.data.roomCode as string;
     const playerId = socket.data.playerId as string;
@@ -215,7 +216,7 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
         io.to(roomCode).emit('room:update', room);
         io.to(roomCode).emit('player:disconnect', playerId);
         
-        console.log(`Player ${playerId} disconnected from room ${roomCode}`);
+        console.log(`Player ${playerName} disconnected from room ${roomCode}`);
       }
     }
   });

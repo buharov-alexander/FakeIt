@@ -23,7 +23,7 @@ class SocketClient {
     }
     
     // Не создавать новое соединение если уже существует
-    if (this.socket && this.socket.connected) {
+    if (this.socket) {
       return;
     }
     
