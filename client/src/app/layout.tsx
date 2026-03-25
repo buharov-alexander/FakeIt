@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fibbage - Игра на блеф",
+  title: "FakeIt - Игра на блеф",
   description: "Игра на блеф для друзей",
 };
 

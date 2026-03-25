@@ -229,7 +229,7 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
 // Запуск сервера
 httpServer.listen(PORT, () => {
-  console.log(`🎮 Fibbage server running on port ${PORT}`);
+  console.log(`🎮 FakeIt server running on port ${PORT}`);
   console.log(`🌐 Client should be available at http://localhost:3000`);
 });
 

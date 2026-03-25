@@ -17,13 +17,13 @@ npm run docker:stop
 ### Manual Commands
 ```bash
 # Собрать образ
-docker build -t fibbage-server .
+docker build -t fakeit-server .
 
 # Запустить контейнер
-docker run -p 3001:3001 --name fibbage-server fibbage-server
+docker run -p 3001:3001 --name fakeit-server fakeit-server
 
 # Остановить и удалить контейнер
-docker stop fibbage-server && docker rm fibbage-server
+docker stop fakeit-server && docker rm fakeit-server
 ```
 
 ## Features
@@ -78,19 +78,19 @@ lsof -i :3001
 kill -9 <PID>
 
 # Or use different port
-docker run -p 3002:3001 fibbage-server
+docker run -p 3002:3001 fakeit-server
 ```
 
 ### Container Issues
 ```bash
 # View logs
-docker logs fibbage-server
+docker logs fakeit-server
 
 # Access container shell
-docker exec -it fibbage-server sh
+docker exec -it fakeit-server sh
 
 # Check container status
-docker ps -a | grep fibbage-server
+docker ps -a | grep fakeit-server
 ```
 
 ### Build Issues
@@ -99,7 +99,7 @@ docker ps -a | grep fibbage-server
 docker builder prune
 
 # Rebuild without cache
-docker build --no-cache -t fibbage-server .
+docker build --no-cache -t fakeit-server .
 ```
 
 ## Performance
@@ -128,7 +128,7 @@ curl http://localhost:3001/health
 ### Resource Usage
 ```bash
 # View container stats
-docker stats fibbage-server
+docker stats fakeit-server
 
 # View disk usage
 docker system df
