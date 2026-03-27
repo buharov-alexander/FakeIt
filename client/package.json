@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "docker:build": "docker build -t fakeit-client .",
+    "docker:run": "docker run -p 3000:3000 --name fakeit-client fakeit-client",
+    "docker:stop": "docker stop fakeit-client && docker rm fakeit-client"
   },
   "dependencies": {
     "next": "16.1.6",
