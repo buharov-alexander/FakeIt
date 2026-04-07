@@ -9,116 +9,130 @@
 fakeit/
 ├── client/                 # Next.js фронтенд
 │   ├── src/
-│   │   ├── app/           # Страницы Next.js
+│   │   ├── app/           # Next.js App Router страницы
+│   │   │   ├── page.tsx   # Главная страница
+│   │   │   ├── layout.tsx # Корневой layout
+│   │   │   ├── globals.css # Глобальные стили
+│   │   │   └── room/      # Страницы комнат
+│   │   │       └── [code]/ # Динамические страницы комнат
 │   │   ├── components/    # React компоненты
-│   │   └── lib/           # Утилиты и socket клиент
-│   ├── package.json       # Зависимости клиента
-│   └── tsconfig.json      # TypeScript конфигурация
+│   │   │   ├── Lobby.tsx  # Лобби комнаты
+│   │   │   ├── GameScreen.tsx # Игровой экран
+│   │   │   ├── VotingScreen.tsx # Экран голосования
+│   │   │   └── ResultsScreen.tsx # Экран результатов
+│   │   ├── hooks/         # React хуки
+│   │   │   └── useRoom.ts # Хук для управления комнатой
+│   │   ├── lib/           # Утилиты и клиенты
+│   │   │   └── socket-client.ts # Socket.io клиент
+│   │   └── types/         # TypeScript типы
+│   │       └── game.types.ts # Общие типы игры
+│   ├── Dockerfile         # Docker конфигурация
+│   ├── next.config.js     # Next.js конфигурация
+│   ├── tailwind.config.js # Tailwind CSS конфигурация
+│   ├── postcss.config.mjs # PostCSS конфигурация
+│   └── package.json       # Зависимости клиента
 ├── server/                 # Express + Socket.io бэкенд
 │   ├── src/
-│   │   ├── data/          # Вопросы и данные
+│   │   ├── data/          # Игровые данные
+│   │   │   └── questions.json # База вопросов
 │   │   ├── types/         # TypeScript типы
-│   │   ├── utils/         # Утилиты
-│   │   ├── room-store.ts  # Хранилище комнат
-│   │   ├── game-engine.ts # Игровая логика
+│   │   │   └── game.types.ts # Типы событий и сущностей
+│   │   ├── room-store.ts  # Хранилище комнат в памяти
+│   │   ├── game-engine.ts # Игровая логика и состояния
 │   │   └── index.ts       # Точка входа сервера
+│   ├── Dockerfile         # Docker конфигурация
 │   └── package.json       # Зависимости сервера
+├── docker-compose.yml     # Docker Compose конфигурация
 ├── .gitignore              # Игнорируемые файлы
 └── package.json           # Корневые скрипты
 ```
 
-## Запуск проекта
+## Быстрый запуск
 
-### Быстрый старт (оба процесса)
+### Локальная разработка
 
 ```bash
 npm install
 npm run dev
 ```
 
-这将同时启动:
+Запустит:
 - Сервер на http://localhost:3001
 - Клиент на http://localhost:3000
 
-### Отдельный запуск
+### Docker развертывание
 
-#### Сервер
 ```bash
-cd server
-npm install
-npm run dev
+docker-compose up
 ```
 
-#### Клиент
-```bash
-cd client
-npm install
-npm run dev
-```
+Запустит:
+- Клиент на http://localhost:3000
+- Сервер на http://localhost:3001
+- Health checks для обоих сервисов
 
 ## Технологии
 
-### Фронтенд
-- **Next.js 16** - React фреймворк
-- **TypeScript** - Типизация
-- **Tailwind CSS** - Стили
-- **Socket.io Client** - WebSocket клиент
+### Фронтенд (Next.js)
+- **Next.js 16** с App Router
+- **TypeScript** для типизации
+- **Tailwind CSS v4** для стилей
+- **Socket.io Client** для real-time коммуникации
+- **React Hooks** для управления состоянием
 
-### Бэкенд
-- **Express** - HTTP сервер
-- **Socket.io** - Real-time коммуникация
-- **TypeScript** - Типизация
-- **In-memory storage** - Хранение комнат в памяти
+### Бэкенд (Express)
+- **Express** HTTP сервер
+- **Socket.io** WebSocket сервер
+- **TypeScript** для типизации
+- **In-memory storage** для комнат
+- **Health endpoints** для Docker
 
-## Игровые механики
-
-1. **Создание комнаты** - Хост создает комнату с уникальным кодом
-2. **Присоединение** - Игроки присоединяются по коду
-3. **Раунды** - 5 раундов с вопросами
-4. **Ответы** - Игроки пишут ложные ответы
-5. **Голосование** - Игроки угадывают правильный ответ
-6. **Очки** - Начисление за правильные ответы и обман
-
-## API события
+## API события Socket.io
 
 ### Клиент → Сервер
-- `room:create` - Создание комнаты
+- `room:create` - Создание новой комнаты
 - `room:join` - Присоединение к комнате
 - `game:start` - Начало игры
-- `round:answer_submit` - Отправка ответа
+- `game:next_round` - Следующий раунд
+- `round:answer_submit` - Отправка ответа на вопрос
 - `round:vote_submit` - Отправка голоса
 
 ### Сервер → Клиент
-- `room:update` - Обновление комнаты
+- `room:update` - Обновление состояния комнаты
+- `room:created` - Комната создана с реальным кодом
 - `game:start` - Начало игры
-- `round:question` - Новый вопрос
+- `round:question` - Новый вопрос раунда
 - `round:voting_start` - Начало голосования
 - `round:results` - Результаты раунда
 - `game:end` - Конец игры
+- `player:disconnect` - Игрок отключился
+- `error` - Ошибка сервера
 
-## Разработка
+## Игровой процесс
 
-### Добавление вопросов
+1. **Создание комнаты** - Хост создает комнату, получает уникальный код
+2. **Присоединение игроков** - Другие игроки вводят код для входа
+3. **Начало игры** - Минимум 2 игрока для старта
+4. **Раунды ответов** - Игроки пишут правдивый и ложные ответы
+5. **Голосование** - Все голосуют за правильный ответ
+6. **Подсчет очков** - Очки за угадывание и успешный обман
+7. **Победитель** - Игрок с максимальным счетом
 
-Вопросы хранятся в `server/src/data/questions.json`:
+## Docker скрипты
 
-```json
-[
-  {
-    "id": "q1",
-    "text": "Самая высокая гора в мире — это _____",
-    "answer": "Эверест"
-  }
-]
+### Клиент
+```bash
+npm run docker:build  # Собрать образ
+npm run docker:run    # Запустить контейнер
+npm run docker:stop   # Остановить контейнер
 ```
 
-### Настройка игры
-
-Настройки в `server/src/room-store.ts`:
-- `maxPlayers` - Макс. игроков (2-8)
-- `roundCount` - Количество раундов
-- `answerTimerSec` - Время на ответ
-- `voteTimerSec` - Время на голосование
+### Сервер
+```bash
+npm run docker:build  # Собрать образ
+npm run docker:run    # Запустить контейнер
+npm run docker:stop   # Остановить контейнер
+```
 
 ## Лицензия
 
